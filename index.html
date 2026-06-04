@@ -111,13 +111,13 @@
   </div>
 
   <script>
-    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqR6gkqcf6P1Nbpo_92vEz427aYSEV9kFJ3fjPs1hViXS37iSwO15o9DK0HmHkD0QHag/exec";
+    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIHDWLmmdq-93xzJqdKq5-Fxdje9Uf5hI0F_aXfc7f7x-QnQVBxfeknwDKfasfTdircQ/exec";
     var selectedWithShipping = 'نعم';
     
     // 🎯 الشركات - غير الأسماء هنا
     var companies = {
-      'admin@ship.com': {pass: '123456', name: 'شركة الشحن السريع'},
-      'test@test.com': {pass: '123123', name: 'متجر express'},
+      'baobaag@shipzone.com': {pass: '123456', name: 'Baobaaag'},
+      'sneakerzone@shipzone.com': {pass: '123123', name: 'SneakerZone'},
       'ahmed@gmail.com': {pass: '5555', name: 'محلات أحمد'},
       'omar@gmail.com': {pass: '8888', name: 'عمر للتجارة'},
       'ali@gmail.com': {pass: '4444', name: 'متجر علي'}
@@ -213,7 +213,7 @@
             var s = data.orders[i];
             t += '<tr><td>' + s.date + '</td><td>' + s.client + '</td><td>' + s.amount + '</td><td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td></tr>';
           }
-          t += '</table><div class="total-box">💰 الإجمالي: ' + (data.total || 0) + ' ريال</div>';
+          t += '</table><div class="total-box"> الإجمالي: ' + (data.total || 0) + ' EGP</div>';
           c.innerHTML = t;
         } else { c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>'; }
       } catch(err) { c.innerHTML = '<p style="color:red">❌ خطأ: ' + err.message + '</p>'; }
