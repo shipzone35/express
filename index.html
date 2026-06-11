@@ -114,7 +114,6 @@
     var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbytTudS6i8kgCriI_k1GLS60LmkuN5pxv-GVsZyMfsj7idT4B55CCQTxy2fLX2mq4E_vQ/exec";
     var selectedWithShipping = 'نعم';
     
-    // 🎯 الشركات - غير الأسماء هنا
     var companies = {
       'baobaag@shipzone.com': {pass: '123456', name: 'Baobaaag'},
       'sneakerzone@shipzone.com': {pass: '123123', name: 'SneakerZone'},
@@ -165,20 +164,31 @@
       e.preventDefault();
       var btn = e.target.querySelector('button');
       var company = localStorage.getItem('userCompany');
+      
+      var inputAmount = parseFloat(this.collectionAmount.value) || 0;
+      var finalAmount = inputAmount;
+      
+      // ✅ لو اختار مع الشحن نطرح 65
+      if (selectedWithShipping === 'نعم') {
+        finalAmount = inputAmount - 65;
+      }
+      
       var data = {
         company: company,
         clientName: this.clientName.value,
         phone: this.phone.value,
         address: this.address.value,
         weight: this.weight.value,
-        collectionAmount: this.collectionAmount.value,
+        collectionAmount: finalAmount,
         withShipping: selectedWithShipping
       };
+      
       btn.textContent = '⏳...';
       try { 
         await fetch(SCRIPT_URL, {method: 'POST', body: JSON.stringify(data)}); 
         alert('✅ تم!'); 
-        this.reset(); 
+        this.reset();
+        selectRadio('نعم'); // ✅ نرجع يحدد نعم بعد الرفع
       }
       catch(err) { alert('❌ ' + err.message); }
       btn.textContent = '🚀 إرسال';
@@ -209,11 +219,16 @@
         var data = await res.json();
         if (data.orders && data.orders.length) {
           var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr>';
+          var grandTotal = 0;
+          
           for (var i = 0; i < data.orders.length; i++) {
             var s = data.orders[i];
+            grandTotal += parseFloat(s.amount);
+            
             t += '<tr><td>' + s.date + '</td><td>' + s.client + '</td><td>' + s.amount + '</td><td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td></tr>';
           }
-          t += '</table><div class="total-box"> الإجمالي: ' + (data.total || 0) + ' EGP</div>';
+          
+          t += '</table><div class="total-box"> الإجمالي: ' + grandTotal + ' EGP</div>';
           c.innerHTML = t;
         } else { c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>'; }
       } catch(err) { c.innerHTML = '<p style="color:red">❌ خطأ: ' + err.message + '</p>'; }
