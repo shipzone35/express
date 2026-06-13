@@ -111,7 +111,7 @@
   </div>
 
   <script>
-    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyDEJUSKSKXgkgYa5SYKsX_Dfko4QNf0UpPZGWBSw64f2Dme_pzkFc7J20VnLDXDnXfA/exec";
+    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9OhlrFYVzDO2RW6RECVtXhHAiWXyXkfm63AeRQkBkMTpPSJVqHKYzTXsFdJ8iH68CwA/exec";
     var selectedWithShipping = 'نعم';
     
     var companies = {
@@ -121,8 +121,6 @@
       'omar@gmail.com': {pass: '8888', name: 'عمر للتجارة'},
       'ali@gmail.com': {pass: '4444', name: 'متجر علي'}
     };
-    
-    // Fixed: Removed the line that deletes userCompany on page load
     
     document.getElementById('loginBtn').onclick = function() {
       var email = document.getElementById('loginEmail').value;
@@ -183,17 +181,23 @@
       };
       
       btn.textContent = '⏳...';
+      
       try { 
-        fetch(SCRIPT_URL, {
+        var response = await fetch(SCRIPT_URL, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data)
         }); 
+        
+        var result = await response.json();
         alert('✅ تم!'); 
         this.reset();
         selectRadio('نعم');
       }
-      catch(err) { alert('❌ ' + err.message); }
+      catch(err) { 
+        alert('❌ ' + err.message); 
+      }
+      
       btn.textContent = '🚀 إرسال';
     };
     
@@ -226,7 +230,7 @@
           
           for (var i = 0; i < data.orders.length; i++) {
             var s = data.orders[i];
-            var accounted = s.accounted || ''; // العمود الجديد في Sheet
+            var accounted = s.accounted || '';
             var isAccounted = (accounted === 'تم' || accounted === 'نعم' || accounted === 'yes' || accounted === '✓');
             
             if (!isAccounted) {
