@@ -17,6 +17,7 @@
     .radio-option { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; text-align: center; cursor: pointer; }
     .radio-option.selected { border-color: #e94560; background: #ffeef2; }
     button { width: 100%; padding: 15px; background: linear-gradient(135deg, #e94560, #0f3460); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
     .btn-red { background: #dc3545; margin-top: 10px; }
     .tabs { display: flex; margin-bottom: 20px; gap: 8px; }
     .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #f0f0f0; border-radius: 8px; font-size: 12px; }
@@ -111,7 +112,8 @@
   </div>
 
   <script>
-    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynyVwSYgKUaiXzuGoDkqDKXP_oAfUlKRG6sunZ8-qB20mwcP1-ug8FYod5oJgbIg2bpA/exec";
+    // ✅ غير هذا الرابط لرابط الـ Deploy الجديد!
+    var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJpsFk_3mj4ViJiAxYEjI2zm9MnVO_8sWhZ2kdlLCBvdPrchO8foT40FpZaLHtwPaC/exec";
     var selectedWithShipping = 'نعم';
     
     var companies = {
@@ -158,6 +160,7 @@
       document.getElementById('radio' + v).classList.add('selected');
     }
     
+    // ✅ إرسـال طلب جديد (GET بدلاً من POST)
     document.getElementById('orderForm').onsubmit = async function(e) {
       e.preventDefault();
       var btn = e.target.querySelector('button');
@@ -170,37 +173,36 @@
         finalAmount = inputAmount - 65;
       }
       
-      var data = {
-        company: company,
-        clientName: this.clientName.value,
-        phone: this.phone.value,
-        address: this.address.value,
-        weight: this.weight.value,
-        collectionAmount: finalAmount,
-        withShipping: selectedWithShipping
-      };
+      // ✅ استخدم GET مع query parameters!
+      var url = SCRIPT_URL + '?action=add' +
+        '&company=' + encodeURIComponent(company) +
+        '&clientName=' + encodeURIComponent(this.clientName.value) +
+        '&phone=' + encodeURIComponent(this.phone.value) +
+        '&address=' + encodeURIComponent(this.address.value) +
+        '&weight=' + encodeURIComponent(this.weight.value) +
+        '&collectionAmount=' + encodeURIComponent(finalAmount) +
+        '&withShipping=' + encodeURIComponent(selectedWithShipping);
       
       btn.textContent = '⏳...';
+      btn.disabled = true;
       
       try { 
-        var response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data)
-        }); 
+        var response = await fetch(url, {method: 'GET'});
         
-        var result = await response.json();
-        alert('✅ تم!'); 
+        alert('✅ تم إرسال الطلب!'); 
         this.reset();
         selectRadio('نعم');
       }
       catch(err) { 
-        alert('❌ ' + err.message); 
+        alert('❌ خطأ: ' + err.message); 
+        console.error(err);
       }
       
       btn.textContent = '🚀 إرسال';
+      btn.disabled = false;
     };
     
+    // ✅ بحث بالهاتف
     document.getElementById('trackForm').onsubmit = async function(e) {
       e.preventDefault();
       var phone = this.searchPhone.value;
@@ -217,6 +219,7 @@
       } catch(err) { r.innerHTML = '<p style="color:red">❌ خطأ</p>'; }
     };
     
+    // ✅ جلب كل الطلبات
     async function loadMyOrders() {
       var company = localStorage.getItem('userCompany');
       var c = document.getElementById('ordersTableContainer');
