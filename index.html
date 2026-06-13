@@ -27,8 +27,6 @@
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
     th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
     th { background: #e94560; color: white; }
-    .selected-box { background: #e94560; color: white; padding: 15px; border-radius: 8px; margin-top: 10px; text-align: center; }
-    .calc-btn { background: #28a745; color: white; padding: 15px; border: none; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -124,7 +122,7 @@
       'ali@gmail.com': {pass: '4444', name: 'متجر علي'}
     };
     
-    // ✅ تم حذف السطر اللي محح البيانات
+    // Fixed: Removed the line that deletes userCompany on page load
     
     document.getElementById('loginBtn').onclick = function() {
       var email = document.getElementById('loginEmail').value;
@@ -223,42 +221,36 @@
         var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company));
         var data = await res.json();
         if (data.orders && data.orders.length) {
-          var t = '<table><tr><th>☑️</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr>';
-          var grandTotal = 0;
+          var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>تم الحساب</th></tr>';
+          var totalNotAccounted = 0;
           
           for (var i = 0; i < data.orders.length; i++) {
             var s = data.orders[i];
-            grandTotal += parseFloat(s.amount);
+            var accounted = s.accounted || ''; // العمود الجديد في Sheet
+            var isAccounted = (accounted === 'تم' || accounted === 'نعم' || accounted === 'yes' || accounted === '✓');
+            
+            if (!isAccounted) {
+              totalNotAccounted += parseFloat(s.amount);
+            }
             
             t += '<tr>';
-            t += '<td><input type="checkbox" class="order-check" data-amount="' + s.amount + '"></td>';
             t += '<td>' + s.date + '</td>';
             t += '<td>' + s.client + '</td>';
             t += '<td>' + s.amount + '</td>';
             t += '<td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td>';
+            t += '<td>' + (isAccounted ? '✅' : '❌') + '</td>';
             t += '</tr>';
           }
           
           t += '</table>';
-          t += '<div class="total-box"> الإجمالي كل الطلبات: ' + grandTotal + ' EGP</div>';
-          t += '<button class="calc-btn" onclick="calculateSelected()">💰 احتساب المحدد</button>';
-          t += '<div id="selectedTotal" class="selected-box" style="display:none">المتبقي (المحدد): <span id="selectedAmount">0</span> EGP</div>';
-          
+          t += '<div class="total-box"> الإجمالي الغير محاسب: ' + totalNotAccounted + ' EGP</div>';
           c.innerHTML = t;
-        } else { c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>'; }
-      } catch(err) { c.innerHTML = '<p style="color:red">❌ خطأ: ' + err.message + '</p>'; }
-    }
-    
-    function calculateSelected() {
-      var checkboxes = document.querySelectorAll('.order-check:checked');
-      var total = 0;
-      
-      checkboxes.forEach(function(cb) {
-        total += parseFloat(cb.getAttribute('data-amount'));
-      });
-      
-      document.getElementById('selectedTotal').style.display = 'block';
-      document.getElementById('selectedAmount').textContent = total;
+        } else {
+          c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>';
+        }
+      } catch(err) {
+        c.innerHTML = '<p style="color:red">❌ خطأ: ' + err.message + '</p>';
+      }
     }
   </script>
 </body>
