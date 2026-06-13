@@ -27,6 +27,8 @@
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
     th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
     th { background: #e94560; color: white; }
+    .selected-box { background: #e94560; color: white; padding: 15px; border-radius: 8px; margin-top: 10px; text-align: center; }
+    .calc-btn { background: #28a745; color: white; padding: 15px; border: none; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -122,7 +124,7 @@
       'ali@gmail.com': {pass: '4444', name: 'متجر علي'}
     };
     
-    localStorage.removeItem('userCompany');
+    // ✅ تم حذف السطر اللي محح البيانات
     
     document.getElementById('loginBtn').onclick = function() {
       var email = document.getElementById('loginEmail').value;
@@ -146,8 +148,8 @@
     }
     
     function showTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.form-section').forEach(function(f) { f.classList.remove('active'); });
       if (tab === 'new') { document.querySelectorAll('.tab')[0].classList.add('active'); document.getElementById('orderForm').classList.add('active'); }
       else if (tab === 'myorders') { document.querySelectorAll('.tab')[1].classList.add('active'); document.getElementById('myOrdersForm').classList.add('active'); }
       else { document.querySelectorAll('.tab')[2].classList.add('active'); document.getElementById('trackForm').classList.add('active'); }
@@ -168,7 +170,6 @@
       var inputAmount = parseFloat(this.collectionAmount.value) || 0;
       var finalAmount = inputAmount;
       
-      // ✅ لو اختار مع الشحن نطرح 65
       if (selectedWithShipping === 'نعم') {
         finalAmount = inputAmount - 65;
       }
@@ -185,10 +186,14 @@
       
       btn.textContent = '⏳...';
       try { 
-        await fetch(SCRIPT_URL, {method: 'POST', body: JSON.stringify(data)}); 
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        }); 
         alert('✅ تم!'); 
         this.reset();
-        selectRadio('نعم'); // ✅ نرجع يحدد نعم بعد الرفع
+        selectRadio('نعم');
       }
       catch(err) { alert('❌ ' + err.message); }
       btn.textContent = '🚀 إرسال';
@@ -218,20 +223,42 @@
         var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company));
         var data = await res.json();
         if (data.orders && data.orders.length) {
-          var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr>';
+          var t = '<table><tr><th>☑️</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr>';
           var grandTotal = 0;
           
           for (var i = 0; i < data.orders.length; i++) {
             var s = data.orders[i];
             grandTotal += parseFloat(s.amount);
             
-            t += '<tr><td>' + s.date + '</td><td>' + s.client + '</td><td>' + s.amount + '</td><td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td></tr>';
+            t += '<tr>';
+            t += '<td><input type="checkbox" class="order-check" data-amount="' + s.amount + '"></td>';
+            t += '<td>' + s.date + '</td>';
+            t += '<td>' + s.client + '</td>';
+            t += '<td>' + s.amount + '</td>';
+            t += '<td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td>';
+            t += '</tr>';
           }
           
-          t += '</table><div class="total-box"> الإجمالي: ' + grandTotal + ' EGP</div>';
+          t += '</table>';
+          t += '<div class="total-box"> الإجمالي كل الطلبات: ' + grandTotal + ' EGP</div>';
+          t += '<button class="calc-btn" onclick="calculateSelected()">💰 احتساب المحدد</button>';
+          t += '<div id="selectedTotal" class="selected-box" style="display:none">المتبقي (المحدد): <span id="selectedAmount">0</span> EGP</div>';
+          
           c.innerHTML = t;
         } else { c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>'; }
       } catch(err) { c.innerHTML = '<p style="color:red">❌ خطأ: ' + err.message + '</p>'; }
+    }
+    
+    function calculateSelected() {
+      var checkboxes = document.querySelectorAll('.order-check:checked');
+      var total = 0;
+      
+      checkboxes.forEach(function(cb) {
+        total += parseFloat(cb.getAttribute('data-amount'));
+      });
+      
+      document.getElementById('selectedTotal').style.display = 'block';
+      document.getElementById('selectedAmount').textContent = total;
     }
   </script>
 </body>
