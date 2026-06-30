@@ -25,7 +25,6 @@
     .form-section { display: none; }
     .form-section.active { display: block; }
     .total-box { background: #28a745; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; }
-    /* تنسيق خاص إذا كان الإجمالي بالسالب */
     .total-box.negative { background: #dc3545; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
     th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
@@ -82,11 +81,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label>💰 المبلغ</label>
-          <input type="number" name="collectionAmount" step="any" required>
+          <label>💰 المبلغ الكلي المستلم من العميل</label>
+          <input type="number" name="collectionAmount" step="any" min="-99999" value="0" required>
         </div>
         <div class="form-group">
-          <label>💵 مع الشحن?</label>
+          <label>💵 خصم مصاريف الشحن (65 ج.م)؟</label>
           <div class="radio-group">
             <div class="radio-option selected" id="radioYes" onclick="selectRadio('نعم')">نعم</div>
             <div class="radio-option" id="radioNo" onclick="selectRadio('لا')">لا</div>
@@ -96,7 +95,7 @@
       </form>
       
       <div id="myOrdersForm" class="form-section">
-        <button onclick="loadMyOrders()">🔍 تحميل</button>
+        <button onclick="loadMyOrders()">🔍 تحميل وتحديث البيانات</button>
         <div id="ordersTableContainer"></div>
       </div>
       
@@ -161,16 +160,20 @@
       document.getElementById('radio' + v).classList.add('selected');
     }
     
+    // تعديل الإرسال لدعم وحساب السوالب والأصفار بدقة
     document.getElementById('orderForm').onsubmit = async function(e) {
       e.preventDefault();
       var btn = e.target.querySelector('button');
       var company = localStorage.getItem('userCompany');
       
-      var inputAmount = parseFloat(this.collectionAmount.value) || 0;
+      // التأكد من جلب القيمة كرقم حقيقي حتى لو كانت صفر
+      var inputAmount = parseFloat(this.collectionAmount.value);
+      if (isNaN(inputAmount)) inputAmount = 0; 
+      
       var finalAmount = inputAmount;
       
       if (selectedWithShipping === 'نعم') {
-        finalAmount = inputAmount - 65;
+        finalAmount = inputAmount - 65; // إذا كان صفر سيصبح صريحاً -65
       }
       
       var url = SCRIPT_URL + '?action=add' +
@@ -179,7 +182,7 @@
         '&phone=' + encodeURIComponent(this.phone.value) +
         '&address=' + encodeURIComponent(this.address.value) +
         '&weight=' + encodeURIComponent(this.weight.value) +
-        '&collectionAmount=' + encodeURIComponent(finalAmount) +
+        '&collectionAmount=' + finalAmount + // إرسال الرقم الرياضي مباشرة
         '&withShipping=' + encodeURIComponent(selectedWithShipping);
       
       btn.textContent = '⏳...';
@@ -187,8 +190,9 @@
       
       try { 
         var response = await fetch(url, {method: 'GET'});
-        alert('✅ تم إرسال الطلب!'); 
+        alert('✅ تم إرسال الطلب! المبلغ المستحق: ' + finalAmount + ' ج.م'); 
         this.reset();
+        this.collectionAmount.value = "0"; // إعادة تعيين افتراضية
         selectRadio('نعم');
       }
       catch(err) { 
@@ -216,7 +220,7 @@
       } catch(err) { r.innerHTML = '<p style="color:red">❌ خطأ</p>'; }
     };
     
-    // التعديل الأساسي هنا لمعالجة الأرقام السالبة القادمة من شيت جوجل
+    // تعديل دالة العرض والجمع لقراءة السوالب الرياضية والمحاسبية (بين قوسين)
     async function loadMyOrders() {
       var company = localStorage.getItem('userCompany');
       var c = document.getElementById('ordersTableContainer');
@@ -233,15 +237,13 @@
             var accounted = s.accounted || '';
             var isAccounted = (accounted === 'تم' || accounted === 'نعم' || accounted === 'yes' || accounted === '✓');
             
-            // تحويل النص إلى نص نظيف يدعم الإشارة السالبة
-            // إذا كان الرقم بالشيء مثل (100) يحوله لـ -100، ويحذف رموز العملات
             var rawAmount = String(s.amount || '0').trim();
             var parsedAmount = 0;
             
+            // معالجة الأرقام السالبة لو كانت قادمة بشكل (65) أو -65
             if (rawAmount.startsWith('(') && rawAmount.endsWith(')')) {
               parsedAmount = -parseFloat(rawAmount.replace(/[^\d.]/g, '')) || 0;
             } else {
-              // استخراج الرقم مع الحفاظ على علامة السالب الناقص (-)
               var cleanAmount = rawAmount.replace(/[^-\d.]/g, '');
               parsedAmount = parseFloat(cleanAmount) || 0;
             }
@@ -253,7 +255,8 @@
             t += '<tr>';
             t += '<td>' + s.date + '</td>';
             t += '<td>' + s.client + '</td>';
-            t += '<td>' + s.amount + '</td>';
+            // إظهار الرقم بشكل واضح
+            t += '<td style="direction:ltr;' + (parsedAmount < 0 ? 'color:red;font-weight:bold;' : '') + '">' + s.amount + '</td>';
             t += '<td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td>';
             t += '<td>' + (isAccounted ? '✅' : '❌') + '</td>';
             t += '</tr>';
@@ -261,7 +264,6 @@
           
           t += '</table>';
           
-          // تغيير لون صندوق الإجمالي للون الأحمر إذا كان الناتج الكلي بالسالب
           var totalClass = totalNotAccounted < 0 ? 'total-box negative' : 'total-box';
           t += '<div class="' + totalClass + '"> الإجمالي الغير محاسب: ' + totalNotAccounted.toFixed(2) + ' EGP</div>';
           c.innerHTML = t;
