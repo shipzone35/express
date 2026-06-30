@@ -24,7 +24,9 @@
     .tab.active { background: #e94560; color: white; }
     .form-section { display: none; }
     .form-section.active { display: block; }
-    .total-box { background: #28a745; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; }
+    .total-box { background: #28a745; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; }
+    /* تنسيق خاص إذا كان الإجمالي بالسالب */
+    .total-box.negative { background: #dc3545; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
     th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
     th { background: #e94560; color: white; }
@@ -81,10 +83,10 @@
         </div>
         <div class="form-group">
           <label>💰 المبلغ</label>
-          <input type="number" name="collectionAmount" required>
+          <input type="number" name="collectionAmount" step="any" required>
         </div>
         <div class="form-group">
-          <label>💵 مع الشحن؟</label>
+          <label>💵 مع الشحن?</label>
           <div class="radio-group">
             <div class="radio-option selected" id="radioYes" onclick="selectRadio('نعم')">نعم</div>
             <div class="radio-option" id="radioNo" onclick="selectRadio('لا')">لا</div>
@@ -112,7 +114,6 @@
   </div>
 
   <script>
-    // ✅ غير هذا الرابط لرابط الـ Deploy الجديد!
     var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJpsFk_3mj4ViJiAxYEjI2zm9MnVO_8sWhZ2kdlLCBvdPrchO8foT40FpZaLHtwPaC/exec";
     var selectedWithShipping = 'نعم';
     
@@ -160,7 +161,6 @@
       document.getElementById('radio' + v).classList.add('selected');
     }
     
-    // ✅ إرسـال طلب جديد (GET بدلاً من POST)
     document.getElementById('orderForm').onsubmit = async function(e) {
       e.preventDefault();
       var btn = e.target.querySelector('button');
@@ -173,7 +173,6 @@
         finalAmount = inputAmount - 65;
       }
       
-      // ✅ استخدم GET مع query parameters!
       var url = SCRIPT_URL + '?action=add' +
         '&company=' + encodeURIComponent(company) +
         '&clientName=' + encodeURIComponent(this.clientName.value) +
@@ -188,7 +187,6 @@
       
       try { 
         var response = await fetch(url, {method: 'GET'});
-        
         alert('✅ تم إرسال الطلب!'); 
         this.reset();
         selectRadio('نعم');
@@ -202,7 +200,6 @@
       btn.disabled = false;
     };
     
-    // ✅ بحث بالهاتف
     document.getElementById('trackForm').onsubmit = async function(e) {
       e.preventDefault();
       var phone = this.searchPhone.value;
@@ -219,7 +216,7 @@
       } catch(err) { r.innerHTML = '<p style="color:red">❌ خطأ</p>'; }
     };
     
-    // ✅ جلب كل الطلبات
+    // التعديل الأساسي هنا لمعالجة الأرقام السالبة القادمة من شيت جوجل
     async function loadMyOrders() {
       var company = localStorage.getItem('userCompany');
       var c = document.getElementById('ordersTableContainer');
@@ -236,8 +233,21 @@
             var accounted = s.accounted || '';
             var isAccounted = (accounted === 'تم' || accounted === 'نعم' || accounted === 'yes' || accounted === '✓');
             
+            // تحويل النص إلى نص نظيف يدعم الإشارة السالبة
+            // إذا كان الرقم بالشيء مثل (100) يحوله لـ -100، ويحذف رموز العملات
+            var rawAmount = String(s.amount || '0').trim();
+            var parsedAmount = 0;
+            
+            if (rawAmount.startsWith('(') && rawAmount.endsWith(')')) {
+              parsedAmount = -parseFloat(rawAmount.replace(/[^\d.]/g, '')) || 0;
+            } else {
+              // استخراج الرقم مع الحفاظ على علامة السالب الناقص (-)
+              var cleanAmount = rawAmount.replace(/[^-\d.]/g, '');
+              parsedAmount = parseFloat(cleanAmount) || 0;
+            }
+            
             if (!isAccounted) {
-              totalNotAccounted += parseFloat(s.amount);
+              totalNotAccounted += parsedAmount;
             }
             
             t += '<tr>';
@@ -250,7 +260,10 @@
           }
           
           t += '</table>';
-          t += '<div class="total-box"> الإجمالي الغير محاسب: ' + totalNotAccounted + ' EGP</div>';
+          
+          // تغيير لون صندوق الإجمالي للون الأحمر إذا كان الناتج الكلي بالسالب
+          var totalClass = totalNotAccounted < 0 ? 'total-box negative' : 'total-box';
+          t += '<div class="' + totalClass + '"> الإجمالي الغير محاسب: ' + totalNotAccounted.toFixed(2) + ' EGP</div>';
           c.innerHTML = t;
         } else {
           c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>';
