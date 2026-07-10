@@ -29,6 +29,7 @@
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
     th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
     th { background: #e94560; color: white; }
+    .shipping-note { font-size: 12px; color: #666; margin-top: 5px; font-style: italic; }
   </style>
 </head>
 <body>
@@ -67,9 +68,24 @@
           <label>📱 الهاتف</label>
           <input type="tel" name="phone" required>
         </div>
+        
         <div class="form-group">
-          <label>📍 العنوان</label>
-          <input type="text" name="address" required>
+          <label>📍 المحافظة</label>
+          <select id="governorateSelect" name="governorate" onchange="updateRegionsAndShipping()" required>
+            <option value="">-- اختر المحافظة --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🗺️ المنطقة / المدينة</label>
+          <select id="regionSelect" name="region" required disabled>
+            <option value="">-- اختر المحافظة أولاً --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🏠 العنوان بالتفصيل</label>
+          <input type="text" name="address" required placeholder="اسم الشارع، رقم العقار...">
         </div>
         <div class="form-group">
           <label>📦 الحجم</label>
@@ -85,11 +101,12 @@
           <input type="number" name="collectionAmount" step="any" min="-99999" value="0" required>
         </div>
         <div class="form-group">
-          <label>💵 خصم مصاريف الشحن (65 ج.م)؟</label>
+          <label id="shippingLabel">💵 خصم مصاريف الشحن؟</label>
           <div class="radio-group">
             <div class="radio-option selected" id="radioYes" onclick="selectRadio('نعم')">نعم</div>
             <div class="radio-option" id="radioNo" onclick="selectRadio('لا')">لا</div>
           </div>
+          <div id="shippingCostNote" class="shipping-note">يرجى اختيار محافظة لمعرفة سعر الشحن</div>
         </div>
         <button type="submit">🚀 إرسال</button>
       </form>
@@ -115,7 +132,85 @@
   <script>
     var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJpsFk_3mj4ViJiAxYEjI2zm9MnVO_8sWhZ2kdlLCBvdPrchO8foT40FpZaLHtwPaC/exec";
     var selectedWithShipping = 'نعم';
+    var currentShippingCost = 0; // متغير ديناميكي لحفظ تكلفة شحن المحافظة المحددة
     
+    // قاعدة بيانات المحافظات والمناطق وأسعار الشحن بناءً على صورتك
+    var locationData = {
+      "القاهرة": { cost: 65, regions: ["وسط البلد", "مصر الجديدة", "مدينة نصر", "المعادي", "التجمع الخامس", "شبرا", "حلوان", "عين شمس", "المرج"] },
+      "الجيزة": { cost: 70, regions: ["الدقي", "المهندسين", "الهرم", "فيصل", "6 أكتوبر", "الشيخ زايد", "العجوزة", "امبابة"] },
+      "الإسكندرية": { cost: 85, regions: ["سموحة", "مصر الجديدة", "المنشية", "العجمي", "ميامي", "سيدي بشر", "برج العرب"] },
+      "القليوبية": { cost: 85, regions: ["بنها", "شبرا الخيمة", "قليوب", "الخانكة", "طوخ", "القناطر الخيرية"] },
+      "المنوفية": { cost: 85, regions: ["شبين الكوم", "أشمون", "منوف", "السادات", "قويسنا", "تلا"] },
+      "الغربية": { cost: 85, regions: ["طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "بسيون"] },
+      "الدقهلية": { cost: 85, regions: ["المنصورة", "ميت غمر", "السنبلاوين", "طلخا", "دكرنس"] },
+      "كفر الشيخ": { cost: 85, regions: ["كفر الشيخ المدينة", "دسوق", "مطوبس", "فوه", "بلطيم"] },
+      "دمياط": { cost: 85, regions: ["دمياط المدينة", "دمياط الجديدة", "رأس البر", "فارسكور"] },
+      "بورسعيد": { cost: 85, regions: ["حي الشرق", "حي العرب", "حي الضواحي", "بورفؤاد"] },
+      "الإسماعيلية": { cost: 85, regions: ["الإسماعيلية المدينة", "الفايد", "القنطرة شرق", "القنطرة غرب"] },
+      "السويس": { cost: 85, regions: ["حي السويس", "حي الأربعين", "حي الجناين", "بورتوفيق"] },
+      "الشرقية": { cost: 85, regions: ["الزقازيق", "العاشر من رمضان", "بلبيس", "فاقوس", "أبو حماد"] },
+      "البحيرة": { cost: 85, regions: ["دمنهور", "كفر الدوار", "إيتاي البارود", "كوم حمادة", "رشيد"] },
+      "الفيوم": { cost: 110, regions: ["الفيوم المدينة", "إطسا", "سنورس", "طامية"] },
+      "بني سويف": { cost: 110, regions: ["بني سويف المدينة", "الواسطى", "ببا", "الفشن"] },
+      "المنيا": { cost: 110, regions: ["المنيا المدينة", "ملوي", "بني مزار", "مغاغة", "سمالوط"] },
+      "أسيوط": { cost: 110, regions: ["أسيوط المدينة", "ديروط", "منفلوط", "القوصية", "أبو تيج"] },
+      "سوهاج": { cost: 110, regions: ["سوهاج المدينة", "طهطا", "أخميم", "جرجا", "البلينا"] },
+      "قنا": { cost: 110, regions: ["قنا المدينة", "نجع حمادي", "دشنا", "قوص"] },
+      "الأقصر": { cost: 110, regions: ["الأقصر المدينة", "إسنا", "أرمنت", "القرنة"] },
+      "أسوان": { cost: 110, regions: ["أسوان المدينة", "كوم أمبو", "إدفو", "نصر النوبة"] },
+      "مرسى مطروح": { cost: 140, regions: ["مطروح المدينة", "الضبعة", "العلمين", "سيوة"] },
+      "الوادي الجديد": { cost: 140, regions: ["الخارجة", "الداخلة", "الفرافرة"] },
+      "البحر الأحمر": { cost: 140, regions: ["الغردقة", "سفاجا", "القصير", "رأس غارب"] },
+      "العين السخنة": { cost: 140, regions: ["منطقة الفنادق والقرى"] },
+      "الساحل الشمالي": { cost: 140, regions: ["قرى الساحل"] }
+    };
+
+    // تعبئة قائمة المحافظات عند فتح الصفحة
+    window.onload = function() {
+      var govSelect = document.getElementById('governorateSelect');
+      for (var gov in locationData) {
+        var opt = document.createElement('option');
+        opt.value = gov;
+        opt.innerHTML = gov;
+        govSelect.appendChild(opt);
+      }
+    };
+
+    // تحديث المناطق وسعر الشحن عند تغيير المحافظة
+    function updateRegionsAndShipping() {
+      var govSelect = document.getElementById('governorateSelect');
+      var regionSelect = document.getElementById('regionSelect');
+      var note = document.getElementById('shippingCostNote');
+      var label = document.getElementById('shippingLabel');
+      
+      var selectedGov = govSelect.value;
+      
+      if (!selectedGov) {
+        regionSelect.innerHTML = '<option value="">-- اختر المحافظة أولاً --</option>';
+        regionSelect.disabled = true;
+        currentShippingCost = 0;
+        note.innerHTML = 'يرجى اختيار محافظة لمعرفة سعر الشحن';
+        label.innerHTML = '💵 خصم مصاريف الشحن؟';
+        return;
+      }
+      
+      // تحديث سعر الشحن
+      currentShippingCost = locationData[selectedGov].cost;
+      note.innerHTML = 'تكلفة الشحن لهذه المحافظة هي: ' + currentShippingCost + ' ج.م';
+      label.innerHTML = '💵 خصم مصاريف الشحن (' + currentShippingCost + ' ج.م)؟';
+      
+      // تحديث قائمة المناطق
+      regionSelect.innerHTML = '<option value="">-- اختر المنطقة / المدينة --</option>';
+      var regions = locationData[selectedGov].regions;
+      for (var i = 0; i < regions.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = regions[i];
+        opt.innerHTML = regions[i];
+        regionSelect.appendChild(opt);
+      }
+      regionSelect.disabled = false;
+    }
+
     var companies = {
       'baobaag@shipzone.com': {pass: '123456', name: 'Baobaaag'},
       'sneakerzone@shipzone.com': {pass: '123123', name: 'SneakerZone'},
@@ -160,29 +255,31 @@
       document.getElementById('radio' + v).classList.add('selected');
     }
     
-    // تعديل الإرسال لدعم وحساب السوالب والأصفار بدقة
     document.getElementById('orderForm').onsubmit = async function(e) {
       e.preventDefault();
       var btn = e.target.querySelector('button');
       var company = localStorage.getItem('userCompany');
       
-      // التأكد من جلب القيمة كرقم حقيقي حتى لو كانت صفر
       var inputAmount = parseFloat(this.collectionAmount.value);
       if (isNaN(inputAmount)) inputAmount = 0; 
       
       var finalAmount = inputAmount;
       
+      // خصم شحن المحافظة المحددة ديناميكياً
       if (selectedWithShipping === 'نعم') {
-        finalAmount = inputAmount - 65; // إذا كان صفر سيصبح صريحاً -65
+        finalAmount = inputAmount - currentShippingCost; 
       }
+      
+      // دمج المحافظة والمنطقة والعنوان بالتفصيل لإرسالهم لـ Google Sheets
+      var fullAddress = this.governorate.value + " - " + this.region.value + " - " + this.address.value;
       
       var url = SCRIPT_URL + '?action=add' +
         '&company=' + encodeURIComponent(company) +
         '&clientName=' + encodeURIComponent(this.clientName.value) +
         '&phone=' + encodeURIComponent(this.phone.value) +
-        '&address=' + encodeURIComponent(this.address.value) +
+        '&address=' + encodeURIComponent(fullAddress) +
         '&weight=' + encodeURIComponent(this.weight.value) +
-        '&collectionAmount=' + finalAmount + // إرسال الرقم الرياضي مباشرة
+        '&collectionAmount=' + finalAmount + 
         '&withShipping=' + encodeURIComponent(selectedWithShipping);
       
       btn.textContent = '⏳...';
@@ -192,8 +289,9 @@
         var response = await fetch(url, {method: 'GET'});
         alert('✅ تم إرسال الطلب! المبلغ المستحق: ' + finalAmount + ' ج.م'); 
         this.reset();
-        this.collectionAmount.value = "0"; // إعادة تعيين افتراضية
+        this.collectionAmount.value = "0"; 
         selectRadio('نعم');
+        updateRegionsAndShipping(); // إعادة ضبط حقول المحافظات
       }
       catch(err) { 
         alert('❌ خطأ: ' + err.message); 
@@ -220,7 +318,6 @@
       } catch(err) { r.innerHTML = '<p style="color:red">❌ خطأ</p>'; }
     };
     
-    // تعديل دالة العرض والجمع لقراءة السوالب الرياضية والمحاسبية (بين قوسين)
     async function loadMyOrders() {
       var company = localStorage.getItem('userCompany');
       var c = document.getElementById('ordersTableContainer');
@@ -240,7 +337,6 @@
             var rawAmount = String(s.amount || '0').trim();
             var parsedAmount = 0;
             
-            // معالجة الأرقام السالبة لو كانت قادمة بشكل (65) أو -65
             if (rawAmount.startsWith('(') && rawAmount.endsWith(')')) {
               parsedAmount = -parseFloat(rawAmount.replace(/[^\d.]/g, '')) || 0;
             } else {
@@ -255,7 +351,6 @@
             t += '<tr>';
             t += '<td>' + s.date + '</td>';
             t += '<td>' + s.client + '</td>';
-            // إظهار الرقم بشكل واضح
             t += '<td style="direction:ltr;' + (parsedAmount < 0 ? 'color:red;font-weight:bold;' : '') + '">' + s.amount + '</td>';
             t += '<td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td>';
             t += '<td>' + (isAccounted ? '✅' : '❌') + '</td>';
