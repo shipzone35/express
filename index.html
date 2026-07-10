@@ -3,70 +3,248 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ship Zone express</title>
+  <title>Ship Zone Express</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .container { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-    h1 { text-align: center; color: #1a1a2e; margin-bottom: 25px; }
-    h1 span { color: #e94560; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; color: #333; font-weight: 600; }
-    input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
-    .radio-group { display: flex; gap: 10px; }
-    .radio-option { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; text-align: center; cursor: pointer; }
-    .radio-option.selected { border-color: #e94560; background: #ffeef2; }
-    button { width: 100%; padding: 15px; background: linear-gradient(135deg, #e94560, #0f3460); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-red { background: #dc3545; margin-top: 10px; }
-    .tabs { display: flex; margin-bottom: 20px; gap: 8px; }
-    .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #f0f0f0; border-radius: 8px; font-size: 12px; }
-    .tab.active { background: #e94560; color: white; }
-    .form-section { display: none; }
+    :root {
+      --primary-color: #111111;
+      --secondary-color: #333333;
+      --accent-color: #00b4d8;
+      --bg-gradient: linear-gradient(135deg, #f4f7f6, #e9ecef);
+      --card-bg: #ffffff;
+      --text-main: #2b2d42;
+      --text-muted: #6c757d;
+      --success: #2ec4b6;
+      --danger: #e63946;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body { 
+      background: var(--bg-gradient); 
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 20px;
+      color: var(--text-main);
+    }
+    
+    .container { 
+      background: var(--card-bg); 
+      padding: 35px 30px; 
+      border-radius: 24px; 
+      width: 100%; 
+      max-width: 520px; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-container img {
+      max-width: 220px;
+      height: auto;
+    }
+    
+    .form-group { margin-bottom: 20px; }
+    
+    label { 
+      display: block; 
+      margin-bottom: 8px; 
+      color: var(--secondary-color); 
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    input, select { 
+      width: 100%; 
+      padding: 14px; 
+      border: 2px solid #e2e8f0; 
+      border-radius: 12px; 
+      font-size: 14px; 
+      color: var(--text-main);
+      background-color: #f8fafc;
+      transition: all 0.2s ease-in-out;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary-color);
+      background-color: #fff;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.05);
+    }
+    
+    .radio-group { display: flex; gap: 12px; margin-top: 5px; }
+    
+    .radio-option { 
+      flex: 1; 
+      padding: 12px; 
+      border: 2px solid #e2e8f0; 
+      border-radius: 12px; 
+      text-align: center; 
+      cursor: pointer; 
+      font-weight: 600;
+      font-size: 14px;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+    }
+    
+    .radio-option.selected { 
+      border-color: var(--primary-color); 
+      background: var(--primary-color);
+      color: #fff;
+    }
+    
+    button { 
+      width: 100%; 
+      padding: 15px; 
+      background: var(--primary-color); 
+      color: white; 
+      border: none; 
+      border-radius: 12px; 
+      font-size: 16px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(17,17,17,0.15);
+    }
+
+    button:hover {
+      background: #222222;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+    
+    button:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
+    
+    .btn-red { background: #222; margin-top: 15px; border: 2px solid #e2e8f0; color: var(--danger); box-shadow: none; }
+    .btn-red:hover { background: #fff5f5; border-color: var(--danger); }
+    
+    .tabs { 
+      display: flex; 
+      margin-bottom: 25px; 
+      gap: 10px; 
+      background: #f1f5f9;
+      padding: 6px;
+      border-radius: 14px;
+    }
+    
+    .tab { 
+      flex: 1; 
+      padding: 10px; 
+      text-align: center; 
+      cursor: pointer; 
+      border-radius: 10px; 
+      font-size: 13px; 
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    
+    .tab.active { 
+      background: #ffffff; 
+      color: var(--primary-color); 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    
+    .form-section { display: none; animation: fadeIn 0.4s ease; }
     .form-section.active { display: block; }
-    .total-box { background: #28a745; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; }
-    .total-box.negative { background: #dc3545; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
-    th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
-    th { background: #e94560; color: white; }
-    .shipping-note { font-size: 12px; color: #666; margin-top: 5px; font-style: italic; }
+    
+    .total-box { 
+      background: var(--success); 
+      color: white; 
+      padding: 16px; 
+      border-radius: 12px; 
+      margin-top: 20px; 
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(46, 196, 182, 0.2);
+    }
+    .total-box.negative { 
+      background: var(--danger); 
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.2);
+    }
+    
+    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; font-size: 12px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+    th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; color: var(--secondary-color); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: #f8fafc; }
+    
+    .shipping-note { font-size: 12px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+    
+    .company-badge {
+      background: #f1f5f9;
+      color: var(--primary-color);
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 15px;
+      font-weight: 700;
+      border: 1px dashed #cbd5e1;
+    }
+
+    .track-card {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 14px;
+      margin-top: 15px;
+      border: 2px solid #e2e8f0;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🚚 Ship <span>Zone</span></h1>
+    <!-- تعديل: دمج اللوجو بدقة وبشكل فخم -->
+    <div class="logo-container">
+      <img src="logo.jpg" alt="ShipZone Logo">
+    </div>
     
     <div id="loginSection">
       <div class="form-group">
-        <label>📧 Email</label>
-        <input type="email" id="loginEmail" placeholder="الإيميل">
+        <label>📧 البريد الإلكتروني</label>
+        <input type="email" id="loginEmail" placeholder="name@company.com">
       </div>
       <div class="form-group">
-        <label>🔑 Password</label>
-        <input type="password" id="loginPassword" placeholder="الباسورد">
+        <label>🔑 كلمة المرور</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
       </div>
-      <button id="loginBtn">🔐 دخول</button>
+      <button id="loginBtn">🔐 تسجيل الدخول</button>
     </div>
     
     <div id="appSections" style="display:none;">
-      <div style="background:#28a745;color:white;padding:12px;border-radius:8px;text-align:center;margin-bottom:15px;font-size:16px">
-        👤 <span id="companyName"></span>
+      <div class="company-badge">
+        👤 متجر: <span id="companyName"></span>
       </div>
       
       <div class="tabs">
-        <div class="tab" onclick="showTab('new')">📦 طلب</div>
-        <div class="tab" onclick="showTab('myorders')">💰 طلباتي</div>
-        <div class="tab" onclick="showTab('track')">🔍 بحث</div>
+        <div class="tab" onclick="showTab('new')">📦 طلب جديد</div>
+        <div class="tab" onclick="showTab('myorders')">💰 كشف حساب</div>
+        <div class="tab" onclick="showTab('track')">🔍 تتبع شحنة</div>
       </div>
       
       <form id="orderForm" class="form-section">
         <div class="form-group">
           <label>👤 اسم العميل</label>
-          <input type="text" name="clientName" required>
+          <input type="text" name="clientName" required placeholder="الاسم ثلاثي">
         </div>
         <div class="form-group">
-          <label>📱 الهاتف</label>
-          <input type="tel" name="phone" required>
+          <label>📱 رقم الهاتف</label>
+          <input type="tel" name="phone" required placeholder="01xxxxxxxxx">
         </div>
         
         <div class="form-group">
@@ -77,7 +255,7 @@
         </div>
 
         <div class="form-group">
-          <label>🗺️ المنطقة / المدينة</label>
+          <label>🗺️ المنطقة / المدينة / المركز</label>
           <select id="regionSelect" name="region" required disabled>
             <option value="">-- اختر المحافظة أولاً --</option>
           </select>
@@ -85,15 +263,15 @@
 
         <div class="form-group">
           <label>🏠 العنوان بالتفصيل</label>
-          <input type="text" name="address" required placeholder="اسم الشارع، رقم العقار...">
+          <input type="text" name="address" required placeholder="اسم الشارع، رقم العقار، الدور...">
         </div>
         <div class="form-group">
-          <label>📦 الحجم</label>
+          <label>📦 حجم الشحنة</label>
           <select name="weight" required>
-            <option value="">-- اختر --</option>
-            <option value="صغير">صغير</option>
-            <option value="متوسط">متوسط</option>
-            <option value="كبير">كبير</option>
+            <option value="">-- اختر الحجم --</option>
+            <option value="صغير">صغير (طرد عادي)</option>
+            <option value="متوسط">متوسط (وزن متوسط)</option>
+            <option value="كبير">كبير (وزن ثقيل)</option>
           </select>
         </div>
         <div class="form-group">
@@ -108,20 +286,20 @@
           </div>
           <div id="shippingCostNote" class="shipping-note">يرجى اختيار محافظة لمعرفة سعر الشحن</div>
         </div>
-        <button type="submit">🚀 إرسال</button>
+        <button type="submit">🚀 إرسال الطلب للسيستم</button>
       </form>
       
       <div id="myOrdersForm" class="form-section">
-        <button onclick="loadMyOrders()">🔍 تحميل وتحديث البيانات</button>
+        <button onclick="loadMyOrders()">🔄 تحديث وجلب البيانات</button>
         <div id="ordersTableContainer"></div>
       </div>
       
       <form id="trackForm" class="form-section">
         <div class="form-group">
-          <label>📱 الهاتف</label>
-          <input type="tel" id="searchPhone" required>
+          <label>📱 رقم هاتف العميل للبحث</label>
+          <input type="tel" id="searchPhone" required placeholder="01xxxxxxxxx">
         </div>
-        <button type="submit">🔍 بحث</button>
+        <button type="submit">🔍 ابحث الآن</button>
         <div id="statusResult"></div>
       </form>
       
@@ -132,40 +310,47 @@
   <script>
     var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJpsFk_3mj4ViJiAxYEjI2zm9MnVO_8sWhZ2kdlLCBvdPrchO8foT40FpZaLHtwPaC/exec";
     var selectedWithShipping = 'نعم';
-    var currentShippingCost = 0; // متغير ديناميكي لحفظ تكلفة شحن المحافظة المحددة
+    var currentShippingCost = 0; 
     
-    // قاعدة بيانات المحافظات والمناطق وأسعار الشحن بناءً على صورتك
     var locationData = {
-      "القاهرة": { cost: 65, regions: ["وسط البلد", "مصر الجديدة", "مدينة نصر", "المعادي", "التجمع الخامس", "شبرا", "حلوان", "عين شمس", "المرج"] },
-      "الجيزة": { cost: 70, regions: ["الدقي", "المهندسين", "الهرم", "فيصل", "6 أكتوبر", "الشيخ زايد", "العجوزة", "امبابة"] },
-      "الإسكندرية": { cost: 85, regions: ["سموحة", "مصر الجديدة", "المنشية", "العجمي", "ميامي", "سيدي بشر", "برج العرب"] },
-      "القليوبية": { cost: 85, regions: ["بنها", "شبرا الخيمة", "قليوب", "الخانكة", "طوخ", "القناطر الخيرية"] },
-      "المنوفية": { cost: 85, regions: ["شبين الكوم", "أشمون", "منوف", "السادات", "قويسنا", "تلا"] },
-      "الغربية": { cost: 85, regions: ["طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "بسيون"] },
-      "الدقهلية": { cost: 85, regions: ["المنصورة", "ميت غمر", "السنبلاوين", "طلخا", "دكرنس"] },
-      "كفر الشيخ": { cost: 85, regions: ["كفر الشيخ المدينة", "دسوق", "مطوبس", "فوه", "بلطيم"] },
-      "دمياط": { cost: 85, regions: ["دمياط المدينة", "دمياط الجديدة", "رأس البر", "فارسكور"] },
-      "بورسعيد": { cost: 85, regions: ["حي الشرق", "حي العرب", "حي الضواحي", "بورفؤاد"] },
-      "الإسماعيلية": { cost: 85, regions: ["الإسماعيلية المدينة", "الفايد", "القنطرة شرق", "القنطرة غرب"] },
-      "السويس": { cost: 85, regions: ["حي السويس", "حي الأربعين", "حي الجناين", "بورتوفيق"] },
-      "الشرقية": { cost: 85, regions: ["الزقازيق", "العاشر من رمضان", "بلبيس", "فاقوس", "أبو حماد"] },
-      "البحيرة": { cost: 85, regions: ["دمنهور", "كفر الدوار", "إيتاي البارود", "كوم حمادة", "رشيد"] },
-      "الفيوم": { cost: 110, regions: ["الفيوم المدينة", "إطسا", "سنورس", "طامية"] },
-      "بني سويف": { cost: 110, regions: ["بني سويف المدينة", "الواسطى", "ببا", "الفشن"] },
-      "المنيا": { cost: 110, regions: ["المنيا المدينة", "ملوي", "بني مزار", "مغاغة", "سمالوط"] },
-      "أسيوط": { cost: 110, regions: ["أسيوط المدينة", "ديروط", "منفلوط", "القوصية", "أبو تيج"] },
-      "سوهاج": { cost: 110, regions: ["سوهاج المدينة", "طهطا", "أخميم", "جرجا", "البلينا"] },
-      "قنا": { cost: 110, regions: ["قنا المدينة", "نجع حمادي", "دشنا", "قوص"] },
-      "الأقصر": { cost: 110, regions: ["الأقصر المدينة", "إسنا", "أرمنت", "القرنة"] },
-      "أسوان": { cost: 110, regions: ["أسوان المدينة", "كوم أمبو", "إدفو", "نصر النوبة"] },
-      "مرسى مطروح": { cost: 140, regions: ["مطروح المدينة", "الضبعة", "العلمين", "سيوة"] },
-      "الوادي الجديد": { cost: 140, regions: ["الخارجة", "الداخلة", "الفرافرة"] },
-      "البحر الأحمر": { cost: 140, regions: ["الغردقة", "سفاجا", "القصير", "رأس غارب"] },
-      "العين السخنة": { cost: 140, regions: ["منطقة الفنادق والقرى"] },
-      "الساحل الشمالي": { cost: 140, regions: ["قرى الساحل"] }
+      "القاهرة": {
+        cost: 65,
+        regions: ["وسط البلد", "مصر الجديدة", "مدينة نصر", "المعادي", "التجمع الخامس", "التجمع الأول", "التجمع الثالث", "الشروق", "مدينتي", "بدر", "الرحاب", "العباسية", "شبرا مصر", "شبرا الخيمة", "الزاوية الحمراء", "الحدائق", "الشرابية", "روض الفرج", "الزمالك", "جاردن سيتي", "السيدة زينب", "مصر القديمة", "الفسطاط", "البساتين", "دار السلام", "الخليفة", "المقطم", "حلوان", "المعصرة", "التبين", "15 مايو", "المرج", "عين شمس", "المطرية", "الزيتون", "مصر الجديدة", "النزهة", "الوايلي", "باب الشعرية", "الموسكي", "الأزبكية", "عابدين"]
+      },
+      "الجيزة": {
+        cost: 70,
+        regions: ["الدقي", "المهندسين", "العجوزة", "البلدوزير", "الوراق", "إمبابة", "المنيرة", "الهرم", "فيصل", "العمرانية", "بولاق الدكرور", "جنوب الجيزة", "المنيب", "6 أكتوبر", "الشيخ زايد", "حدائق أكتوبر", "توسعات أكتوبر", "أبوالنمرس", "الحوامدية", "البدرشين", "العياط", "أطفيح", "الصف", "الواحات البحرية", "كرداسة", "أوسيم", "منشأة القناطر"]
+      },
+      "العين السخنة": { cost: 140, regions: ["بورتو السخنة", "منطقة الفنادق والقرى السياحية", "طريق السويس السخنة", "الزعفرانة"] },
+      "الساحل الشمالي": { cost: 140, regions: ["مارينا 1-7", "قرى سيدي كرير", "مراسي", "هاسيندا", "أمواج", "قرى طريق الإسكندرية مطروح الصحراوي"] },
+      "الإسكندرية": {
+        cost: 85,
+        regions: ["المنتزة أول", "المنتزة ثان", "حي شرق (سموحة/سيدي جابر)", "حي وسط (شاتبي/محرم بك)", "حي غرب (مينا البصل/القباري)", "حي الجمرك", "العجمي", "العامرية أول", "العامرية ثان", "برج العرب", "السيوف", "ميامي", "سيدي بشر", "العصافرة", "المعمورة", "ابو قير", "جليم", "ستانلي", "رشدي", "لوران", "المنشية", "بحري"]
+      },
+      "القليوبية": { cost: 85, regions: ["بنها", "قليوب", "شبرا الخيمة أول", "شبرا الخيمة ثان", "القناطر الخيرية", "الخانكة", "كفر شكر", "طوخ", "شبين القناطر", "العبور", "الخصوص", "قها"] },
+      "المنوفية": { cost: 85, regions: ["شبين الكوم", "منوف", "مدينة السادات", "سرس الليان", "أشمون", "الباجور", "قويسنا", "بركة السبع", "تلا", "الشهداء"] },
+      "الغربية": { cost: 85, regions: ["طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "السنطة", "بسيون", "سمنود", "قطور"] },
+      "الدقهلية": { cost: 85, regions: ["المنصورة", "طلخا", "ميت غمر", "دكرنس", "أجا", "السنبلاوين", "المنزلة", "الجمالية", "شربين", "بني عبيد", "ميت سلسيل", "محل الدمنة", "بلقاس", "تمي الأمديد", "الكردي", "المطرية", "جمصة"] },
+      "كفر الشيخ": { cost: 85, regions: ["كفر الشيخ المدينة", "دسوق", "فوه", "مطوبس", "بلطيم", "الحامول", "بيلا", "الرياض", "سيدي سالم", "قلين", "برج البرلس", "مسير"] },
+      "دمياط": { cost: 85, regions: ["دمياط المدينة", "دمياط الجديدة", "رأس البر", "فارسكور", "الزرقا", "كفر سعد", "كفر البطيخ", "عزبة البرج", "السرو", "الروضة"] },
+      "بورسعيد": { cost: 85, regions: ["حي الشرق", "حي العرب", "حي المناخ", "حي الضواحي", "حي الجنوب", "حي الزهور", "حي الغرب", "بورفؤاد"] },
+      "الإسماعيلية": { cost: 85, regions: ["الإسماعيلية المدينة", "فايد", "القنطرة شرق", "القنطرة غرب", "التل الكبير", "أبو صوير", "القصاصين"] },
+      "السويس": { cost: 85, regions: ["حي السويس", "حي الأربعين", "حي عتاقة", "حي الجناين", "حي فيصل", "بورتوفيق"] },
+      "الشرقية": { cost: 85, regions: ["الزقازيق", "العاشر من رمضان", "بلبيس", "مشتول السوق", "منيا القمح", "أبو حماد", "القرين", "فاقوس", "الحسينية", "كفر صقر", "أولاد صقر", "أبو كبير", "ههيا", "ديرب نجم", "الإبراهيمية", "صان الحجر", "الصالحية الجديدة"] },
+      "البحيرة": { cost: 85, regions: ["دمنهور", "كفر الدوار", "رشيد", "إدكو", "أبو حمص", "إيتاي البارود", "شبراخيت", "كوم حمادة", "بدر", "وادي النطرون", "دلنجات", "حوش عيسى", "أبو المطامير", "الرحمانية", "المحمودية"] },
+      "الفيوم": { cost: 110, regions: ["الفيوم المدينة", "الفيوم الجديدة", "طامية", "سنورس", "إطسا", "أبشواي", "يوسف الصديق"] },
+      "بني سويف": { cost: 110, regions: ["بني سويف المدينة", "بني سويف الجديدة", "الواسطى", "ناصر", "ببا", "الفشن", "سمسطا", "إهناسيا"] },
+      "المنيا": { cost: 110, regions: ["المنيا المدينة", "المنيا الجديدة", "ملوي", "بني مزار", "مغاغة", "سمالوط", "أبو قرقاص", "مطاي", "العدوة", "دير مواس"] },
+      "أسيوط": { cost: 110, regions: ["أسيوط المدينة", "أسيوط الجديدة", "ديروط", "منفلوط", "القوصية", "أبنوب", "الفتح", "أبو تيج", "الغنايم", "ساحل سليم", "البداري", "صدفا"] },
+      "سوهاج": { cost: 110, regions: ["سوهاج المدينة", "سوهاج الجديدة", "أخميم", "الكوثر", "طهطا", "جرجا", "البلينا", "المراغة", "جهينة", "ساقلتة", "المنشأة", "العسيرات", "دار السلام"] },
+      "قنا": { cost: 110, regions: ["قنا المدينة", "نجع حمادي", "دشنا", "قوص", "أبو تشت", "فرشوط", "الوقف", "نقادة", "قفط"] },
+      "الأقصر": { cost: 110, regions: ["الأقصر المدينة", "الأقصر الجديدة", "طيبة الجديدة", "البياضية", "القرنة", "أرمنت", "إسنا", "الطود"] },
+      "أسوان": { cost: 110, regions: ["أسوان المدينة", "أسوان الجديدة", "كوم أمبو", "إدفو", "نصر النوبة", "دراو", "ابو سمبل السياحية"] },
+      "مرسى مطروح": { cost: 140, regions: ["مطروح المدينة", "الضبعة", "العلمين", "سيدي عبد الرحمن", "الحمام", "النجيلة", "براني", "السلوم", "سيوة"] },
+      "الوادي الجديد": { cost: 140, regions: ["الخارجة", "الداخلة", "الفرافرة", "باريس", "بلاط"] },
+      "البحر الأحمر": { cost: 140, regions: ["الغردقة", "سفاجا", "القصير", "رأس غارب", "مرسى علم", "شلاتين", "حلايب"] }
     };
 
-    // تعبئة قائمة المحافظات عند فتح الصفحة
     window.onload = function() {
       var govSelect = document.getElementById('governorateSelect');
       for (var gov in locationData) {
@@ -174,9 +359,15 @@
         opt.innerHTML = gov;
         govSelect.appendChild(opt);
       }
+      
+      if(localStorage.getItem('userCompany')) {
+        document.getElementById('companyName').textContent = localStorage.getItem('userCompany');
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('appSections').style.display = 'block';
+        showTab('new');
+      }
     };
 
-    // تحديث المناطق وسعر الشحن عند تغيير المحافظة
     function updateRegionsAndShipping() {
       var govSelect = document.getElementById('governorateSelect');
       var regionSelect = document.getElementById('regionSelect');
@@ -194,13 +385,11 @@
         return;
       }
       
-      // تحديث سعر الشحن
       currentShippingCost = locationData[selectedGov].cost;
       note.innerHTML = 'تكلفة الشحن لهذه المحافظة هي: ' + currentShippingCost + ' ج.م';
       label.innerHTML = '💵 خصم مصاريف الشحن (' + currentShippingCost + ' ج.م)؟';
       
-      // تحديث قائمة المناطق
-      regionSelect.innerHTML = '<option value="">-- اختر المنطقة / المدينة --</option>';
+      regionSelect.innerHTML = '<option value="">-- اختر المنطقة / المدينة / المركز --</option>';
       var regions = locationData[selectedGov].regions;
       for (var i = 0; i < regions.length; i++) {
         var opt = document.createElement('option');
@@ -229,6 +418,7 @@
         document.getElementById('companyName').textContent = companies[email].name;
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('appSections').style.display = 'block';
+        showTab('new');
       } else {
         alert('بيانات خاطئة');
       }
@@ -265,12 +455,10 @@
       
       var finalAmount = inputAmount;
       
-      // خصم شحن المحافظة المحددة ديناميكياً
       if (selectedWithShipping === 'نعم') {
         finalAmount = inputAmount - currentShippingCost; 
       }
       
-      // دمج المحافظة والمنطقة والعنوان بالتفصيل لإرسالهم لـ Google Sheets
       var fullAddress = this.governorate.value + " - " + this.region.value + " - " + this.address.value;
       
       var url = SCRIPT_URL + '?action=add' +
@@ -282,23 +470,23 @@
         '&collectionAmount=' + finalAmount + 
         '&withShipping=' + encodeURIComponent(selectedWithShipping);
       
-      btn.textContent = '⏳...';
+      btn.textContent = '⏳ جاري إرسال طلبك المحاسبي...';
       btn.disabled = true;
       
       try { 
         var response = await fetch(url, {method: 'GET'});
-        alert('✅ تم إرسال الطلب! المبلغ المستحق: ' + finalAmount + ' ج.م'); 
+        alert('✅ تم إرسال الطلب بنجاح!\nالمبلغ الصافي المستحق لك: ' + finalAmount + ' ج.م'); 
         this.reset();
         this.collectionAmount.value = "0"; 
         selectRadio('نعم');
-        updateRegionsAndShipping(); // إعادة ضبط حقول المحافظات
+        updateRegionsAndShipping(); 
       }
       catch(err) { 
-        alert('❌ خطأ: ' + err.message); 
+        alert('❌ خطأ في الاتصال بالخادم: ' + err.message); 
         console.error(err);
       }
       
-      btn.textContent = '🚀 إرسال';
+      btn.textContent = '🚀 إرسال الطلب للسيستم';
       btn.disabled = false;
     };
     
@@ -307,26 +495,30 @@
       var phone = this.searchPhone.value;
       var company = localStorage.getItem('userCompany');
       var r = document.getElementById('statusResult');
-      r.textContent = '⏳...';
+      r.innerHTML = '<div class="track-card">⏳ جاري البحث عن بيانات الشحنة...</div>';
       try {
         var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company) + '&phone=' + phone);
         var data = await res.json();
         if (data.orders && data.orders.length) {
           var o = data.orders[data.orders.length-1];
-          r.innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px;margin-top:10px"><h3>'+o.client+'</h3><h2>'+o.status+'</h2><p>💰 '+o.amount+'</p></div>';
-        } else { r.innerHTML = '<p style="color:red">❌ لا يوجد</p>'; }
-      } catch(err) { r.innerHTML = '<p style="color:red">❌ خطأ</p>'; }
+          r.innerHTML = '<div class="track-card" style="border-color:var(--success); background:#f0fdfa;">' +
+                        '<h3 style="color:var(--primary-color); margin-bottom:5px;">👤 '+o.client+'</h3>' +
+                        '<h2 style="color:var(--success); margin-bottom:8px;">'+o.status+'</h2>' +
+                        '<p style="font-weight:bold;">💰 الصافي: '+o.amount+' ج.م</p>' +
+                        '</div>';
+        } else { r.innerHTML = '<div class="track-card" style="border-color:var(--danger); color:var(--danger)">❌ لا توجد شحنات مسجلة بهذا الرقم لهذا المتجر</div>'; }
+      } catch(err) { r.innerHTML = '<div class="track-card" style="border-color:var(--danger); color:var(--danger)">❌ حدث خطأ أثناء جلب البيانات</div>'; }
     };
     
     async function loadMyOrders() {
       var company = localStorage.getItem('userCompany');
       var c = document.getElementById('ordersTableContainer');
-      c.textContent = '⏳...';
+      c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">⏳ جاري تحميل كشف الحساب وتحديث البيانات...</div>';
       try {
         var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company));
         var data = await res.json();
         if (data.orders && data.orders.length) {
-          var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>تم الحساب</th></tr>';
+          var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الحساب</th></tr>';
           var totalNotAccounted = 0;
           
           for (var i = 0; i < data.orders.length; i++) {
@@ -351,22 +543,22 @@
             t += '<tr>';
             t += '<td>' + s.date + '</td>';
             t += '<td>' + s.client + '</td>';
-            t += '<td style="direction:ltr;' + (parsedAmount < 0 ? 'color:red;font-weight:bold;' : '') + '">' + s.amount + '</td>';
-            t += '<td style="color:' + (s.status === 'تم التسليم' ? 'green' : 'orange') + '">' + s.status + '</td>';
-            t += '<td>' + (isAccounted ? '✅' : '❌') + '</td>';
+            t += '<td style="direction:ltr;' + (parsedAmount < 0 ? 'color:var(--danger);font-weight:bold;' : '') + '">' + s.amount + '</td>';
+            t += '<td style="font-weight:600; color:' + (s.status === 'تم التسليم' ? 'var(--success)' : 'orange') + '">' + s.status + '</td>';
+            t += '<td>' + (isAccounted ? '✅ محاسب' : '❌ معلق') + '</td>';
             t += '</tr>';
           }
           
           t += '</table>';
           
           var totalClass = totalNotAccounted < 0 ? 'total-box negative' : 'total-box';
-          t += '<div class="' + totalClass + '"> الإجمالي الغير محاسب: ' + totalNotAccounted.toFixed(2) + ' EGP</div>';
+          t += '<div class="' + totalClass + '"> إجمالي مستحقاتك المعلقة: ' + totalNotAccounted.toFixed(2) + ' EGP</div>';
           c.innerHTML = t;
         } else {
-          c.innerHTML = '<p style="color:#666">لا توجد طلبات</p>';
+          c.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">لا توجد طلبات مسجلة بعد لهذا المتجر.</p>';
         }
       } catch(err) {
-        c.innerHTML = '<p style="color:red">❌ خطأ: ' + err.message + '</p>';
+        c.innerHTML = '<p style="color:var(--danger); text-align:center; padding:20px;">❌ خطأ: ' + err.message + '</p>';
       }
     }
   </script>
