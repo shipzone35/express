@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ship Zone Express</title>
+  <!-- مكتبة الأيقونات للحالات المختلفة -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --primary-color: #111111;
@@ -15,6 +17,8 @@
       --text-muted: #6c757d;
       --success: #2ec4b6;
       --danger: #e63946;
+      --warning: #f7a072;
+      --info: #00b4d8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -25,27 +29,27 @@
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      padding: 20px;
+      padding: 15px;
       color: var(--text-main);
     }
     
     .container { 
       background: var(--card-bg); 
-      padding: 35px 30px; 
+      padding: 30px 20px; 
       border-radius: 24px; 
       width: 100%; 
-      max-width: 520px; 
+      max-width: 650px; /* زيادة العرض لتناسب جداول الحالات بشكل مريح */
       box-shadow: 0 15px 35px rgba(0,0,0,0.08);
       transition: all 0.3s ease;
     }
 
     .logo-container {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .logo-container img {
-      max-width: 220px;
+      max-width: 200px;
       height: auto;
     }
     
@@ -116,28 +120,32 @@
       background: #222222;
       transform: translateY(-1px);
     }
-
-    button:active {
-      transform: translateY(1px);
-    }
-    
-    button:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
     
     .btn-red { background: #222; margin-top: 15px; border: 2px solid #e2e8f0; color: var(--danger); box-shadow: none; }
     .btn-red:hover { background: #fff5f5; border-color: var(--danger); }
     
-    .tabs { 
-      display: flex; 
-      margin-bottom: 25px; 
-      gap: 10px; 
+    /* شريط التبويبات المطور القابل للسحب (Horizontal Scroll) على الموبايل */
+    .tabs-wrapper {
+      overflow-x: auto;
+      white-space: nowrap;
+      margin-bottom: 25px;
       background: #f1f5f9;
       padding: 6px;
       border-radius: 14px;
+      scrollbar-width: none; /* إخفاء شريط التمرير في فايرفوكس */
+    }
+    
+    .tabs-wrapper::-webkit-scrollbar {
+      display: none; /* إخفاء شريط التمرير في كروم وسفاري */
+    }
+
+    .tabs { 
+      display: inline-flex; 
+      gap: 6px; 
     }
     
     .tab { 
-      flex: 1; 
-      padding: 10px; 
+      padding: 10px 16px; 
       text-align: center; 
       cursor: pointer; 
       border-radius: 10px; 
@@ -145,6 +153,7 @@
       font-weight: 600;
       color: var(--text-muted);
       transition: all 0.2s ease;
+      display: inline-block;
     }
     
     .tab.active { 
@@ -172,7 +181,7 @@
       box-shadow: 0 4px 12px rgba(230, 57, 70, 0.2);
     }
     
-    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; font-size: 12px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; font-size: 12px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
     th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; }
     th { background: #f8fafc; color: var(--secondary-color); font-weight: 700; border-bottom: 2px solid #e2e8f0; }
     tr:last-child td { border-bottom: none; }
@@ -192,13 +201,39 @@
       border: 1px dashed #cbd5e1;
     }
 
-    .track-card {
-      background: #f8fafc;
-      padding: 20px;
-      border-radius: 14px;
-      margin-top: 15px;
-      border: 2px solid #e2e8f0;
+    .status-badge-inline {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-btn {
+      margin-bottom: 15px;
+      background: #f1f5f9;
+      color: var(--primary-color);
+      border: 1px solid #cbd5e1;
+      box-shadow: none;
+    }
+    .refresh-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .empty-state {
+      color: var(--text-muted);
       text-align: center;
+      padding: 30px 10px;
+      font-size: 14px;
+    }
+
+    .empty-state i {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+      color: #cbd5e1;
     }
 
     @keyframes fadeIn {
@@ -209,7 +244,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- تعديل: دمج اللوجو بدقة وبشكل فخم -->
     <div class="logo-container">
       <img src="logo.jpg" alt="ShipZone Logo">
     </div>
@@ -231,12 +265,21 @@
         👤 متجر: <span id="companyName"></span>
       </div>
       
-      <div class="tabs">
-        <div class="tab" onclick="showTab('new')">📦 طلب جديد</div>
-        <div class="tab" onclick="showTab('myorders')">💰 كشف حساب</div>
-        <div class="tab" onclick="showTab('track')">🔍 تتبع شحنة</div>
+      <!-- شريط التبويبات الـ 8 المتقسم بدقة تامة -->
+      <div class="tabs-wrapper">
+        <div class="tabs">
+          <div class="tab" onclick="showTab('new')">📦 طلب جديد</div>
+          <div class="tab" onclick="showTab('financial')">💰 الحسابات والمالية</div>
+          <div class="tab" id="tab_delivering" onclick="showTab('delivering')">🚚 قيد التوصيل</div>
+          <div class="tab" id="tab_in_warehouse" onclick="showTab('in_warehouse')">🏢 في المخزن</div>
+          <div class="tab" id="tab_delivered" onclick="showTab('delivered')">✅ تم التسليم</div>
+          <div class="tab" id="tab_failed" onclick="showTab('failed')">❌ تعذر التسليم</div>
+          <div class="tab" id="tab_waiting" onclick="showTab('waiting')">⏳ انتظار الشحن</div>
+          <div class="tab" id="tab_redelivery" onclick="showTab('redelivery')">🔄 إعادة التوصيل</div>
+        </div>
       </div>
       
+      <!-- 1. شاشة طلب جديد -->
       <form id="orderForm" class="form-section">
         <div class="form-group">
           <label>👤 اسم العميل</label>
@@ -289,19 +332,17 @@
         <button type="submit">🚀 إرسال الطلب للسيستم</button>
       </form>
       
-      <div id="myOrdersForm" class="form-section">
-        <button onclick="loadMyOrders()">🔄 تحديث وجلب البيانات</button>
-        <div id="ordersTableContainer"></div>
+      <!-- 2. شاشة الحسابات والمالية -->
+      <div id="financialSection" class="form-section">
+        <button class="refresh-btn" onclick="loadFinancialData()">🔄 تحديث كشف الحساب والماليات</button>
+        <div id="financialTableContainer"></div>
       </div>
       
-      <form id="trackForm" class="form-section">
-        <div class="form-group">
-          <label>📱 رقم هاتف العميل للبحث</label>
-          <input type="tel" id="searchPhone" required placeholder="01xxxxxxxxx">
-        </div>
-        <button type="submit">🔍 ابحث الآن</button>
-        <div id="statusResult"></div>
-      </form>
+      <!-- 3. شاشات عرض الحالات الديناميكية (كل الحالات تستخدم نفس الحاوية المرنة لسهولة الإدارة) -->
+      <div id="statusSection" class="form-section">
+        <button class="refresh-btn" onclick="refreshCurrentStatusTab()">🔄 تحديث البيانات الآن</button>
+        <div id="statusTableContainer"></div>
+      </div>
       
       <button class="btn-red" onclick="logout()">🚪 تسجيل خروج</button>
     </div>
@@ -311,22 +352,41 @@
     var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJpsFk_3mj4ViJiAxYEjI2zm9MnVO_8sWhZ2kdlLCBvdPrchO8foT40FpZaLHtwPaC/exec";
     var selectedWithShipping = 'نعم';
     var currentShippingCost = 0; 
+    var cachedOrders = []; // كاش لتخزين الطلبات محلياً لسرعة التنقل بين التبويبات بدون تحميل مستمر
+    var currentActiveStatus = ''; // لتخزين الحالة النشطة حالياً
     
+    // دالة لتحديد الأيقونة واللون لكل حالة من الحالات المحددة بدقة
+    function getStatusDetails(status) {
+      var s = String(status).trim();
+      switch(s) {
+        case 'قيد التوصيل':
+          return { icon: 'fa-truck-fast', color: 'var(--warning)', bg: '#fffbeb', text: 'قيد التوصيل' };
+        case 'في المخزن':
+        case 'المخزن':
+          return { icon: 'fa-warehouse', color: 'var(--info)', bg: '#f0f9ff', text: 'في المخزن' };
+        case 'تم التسليم':
+          return { icon: 'fa-check-circle', color: 'var(--success)', bg: '#f0fdfa', text: 'تم التسليم' };
+        case 'تعذر التسليم':
+        case 'رفض الاستلام':
+        case 'مرفوض':
+          return { icon: 'fa-circle-xmark', color: 'var(--danger)', bg: '#fff5f5', text: 'تعذر التسليم' };
+        case 'انتظار الشحن':
+        case 'قيد الانتظار':
+          return { icon: 'fa-clock', color: '#6b7280', bg: '#f3f4f6', text: 'انتظار الشحن' };
+        case 'إعادة التوصيل':
+        case 'اعادة التوصيل':
+          return { icon: 'fa-arrows-rotate', color: '#9333ea', bg: '#faf5ff', text: 'إعادة التوصيل' };
+        default:
+          return { icon: 'fa-box', color: '#4b5563', bg: '#f3f4f6', text: s || 'غير محدد' };
+      }
+    }
+
     var locationData = {
-      "القاهرة": {
-        cost: 65,
-        regions: ["وسط البلد", "مصر الجديدة", "مدينة نصر", "المعادي", "التجمع الخامس", "التجمع الأول", "التجمع الثالث", "الشروق", "مدينتي", "بدر", "الرحاب", "العباسية", "شبرا مصر", "شبرا الخيمة", "الزاوية الحمراء", "الحدائق", "الشرابية", "روض الفرج", "الزمالك", "جاردن سيتي", "السيدة زينب", "مصر القديمة", "الفسطاط", "البساتين", "دار السلام", "الخليفة", "المقطم", "حلوان", "المعصرة", "التبين", "15 مايو", "المرج", "عين شمس", "المطرية", "الزيتون", "مصر الجديدة", "النزهة", "الوايلي", "باب الشعرية", "الموسكي", "الأزبكية", "عابدين"]
-      },
-      "الجيزة": {
-        cost: 70,
-        regions: ["الدقي", "المهندسين", "العجوزة", "البلدوزير", "الوراق", "إمبابة", "المنيرة", "الهرم", "فيصل", "العمرانية", "بولاق الدكرور", "جنوب الجيزة", "المنيب", "6 أكتوبر", "الشيخ زايد", "حدائق أكتوبر", "توسعات أكتوبر", "أبوالنمرس", "الحوامدية", "البدرشين", "العياط", "أطفيح", "الصف", "الواحات البحرية", "كرداسة", "أوسيم", "منشأة القناطر"]
-      },
+      "القاهرة": { cost: 65, regions: ["وسط البلد", "مصر الجديدة", "مدينة نصر", "المعادي", "التجمع الخامس", "التجمع الأول", "التجمع الثالث", "الشروق", "مدينتي", "بدر", "الرحاب", "العباسية", "شبرا مصر", "شبرا الخيمة", "الزاوية الحمراء", "الحدائق", "الشرابية", "روض الفرج", "الزمالك", "جاردن سيتي", "السيدة زينب", "مصر القديمة", "الفسطاط", "البساتين", "دار السلام", "الخليفة", "المقطم", "حلوان", "المعصرة", "التبين", "15 مايو", "المرج", "عين شمس", "المطرية", "الزيتون", "مصر الجديدة", "النزهة", "الوايلي", "باب الشعرية", "الموسكي", "الأزبكية", "عابدين"] },
+      "الجيزة": { cost: 70, regions: ["الدقي", "المهندسين", "العجوزة", "البلدوزير", "الوراق", "إمبابة", "المنيرة", "الهرم", "فيصل", "العمرانية", "بولاق الدكرور", "جنوب الجيزة", "المنيب", "6 أكتوبر", "الشيخ زايد", "حدائق أكتوبر", "توسعات أكتوبر", "أبوالنمرس", "الحوامدية", "البدرشين", "العياط", "أطفيح", "الصف", "الواحات البحرية", "كرداسة", "أوسيم", "منشأة القناطر"] },
       "العين السخنة": { cost: 140, regions: ["بورتو السخنة", "منطقة الفنادق والقرى السياحية", "طريق السويس السخنة", "الزعفرانة"] },
       "الساحل الشمالي": { cost: 140, regions: ["مارينا 1-7", "قرى سيدي كرير", "مراسي", "هاسيندا", "أمواج", "قرى طريق الإسكندرية مطروح الصحراوي"] },
-      "الإسكندرية": {
-        cost: 85,
-        regions: ["المنتزة أول", "المنتزة ثان", "حي شرق (سموحة/سيدي جابر)", "حي وسط (شاتبي/محرم بك)", "حي غرب (مينا البصل/القباري)", "حي الجمرك", "العجمي", "العامرية أول", "العامرية ثان", "برج العرب", "السيوف", "ميامي", "سيدي بشر", "العصافرة", "المعمورة", "ابو قير", "جليم", "ستانلي", "رشدي", "لوران", "المنشية", "بحري"]
-      },
+      "الإسكندرية": { cost: 85, regions: ["المنتزة أول", "المنتزة ثان", "حي شرق (سموحة/سيدي جابر)", "حي وسط (شاتبي/محرم بك)", "حي غرب (مينا البصل/القباري)", "حي الجمرك", "العجمي", "العامرية أول", "العامرية ثان", "برج العرب", "السيوف", "ميامي", "سيدي بشر", "العصافرة", "المعمورة", "ابو قير", "جليم", "ستانلي", "رشدي", "لوران", "المنشية", "بحري"] },
       "القليوبية": { cost: 85, regions: ["بنها", "قليوب", "شبرا الخيمة أول", "شبرا الخيمة ثان", "القناطر الخيرية", "الخانكة", "كفر شكر", "طوخ", "شبين القناطر", "العبور", "الخصوص", "قها"] },
       "المنوفية": { cost: 85, regions: ["شبين الكوم", "منوف", "مدينة السادات", "سرس الليان", "أشمون", "الباجور", "قويسنا", "بركة السبع", "تلا", "الشهداء"] },
       "الغربية": { cost: 85, regions: ["طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "السنطة", "بسيون", "سمنود", "قطور"] },
@@ -373,7 +433,6 @@
       var regionSelect = document.getElementById('regionSelect');
       var note = document.getElementById('shippingCostNote');
       var label = document.getElementById('shippingLabel');
-      
       var selectedGov = govSelect.value;
       
       if (!selectedGov) {
@@ -433,9 +492,33 @@
     function showTab(tab) {
       document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
       document.querySelectorAll('.form-section').forEach(function(f) { f.classList.remove('active'); });
-      if (tab === 'new') { document.querySelectorAll('.tab')[0].classList.add('active'); document.getElementById('orderForm').classList.add('active'); }
-      else if (tab === 'myorders') { document.querySelectorAll('.tab')[1].classList.add('active'); document.getElementById('myOrdersForm').classList.add('active'); }
-      else { document.querySelectorAll('.tab')[2].classList.add('active'); document.getElementById('trackForm').classList.add('active'); }
+      
+      if (tab === 'new') { 
+        document.querySelectorAll('.tab')[0].classList.add('active'); 
+        document.getElementById('orderForm').classList.add('active'); 
+      }
+      else if (tab === 'financial') { 
+        document.querySelectorAll('.tab')[1].classList.add('active'); 
+        document.getElementById('financialSection').classList.add('active'); 
+        loadFinancialData(); 
+      }
+      else {
+        // لشاشات تصفية الحالات الفردية
+        var tabIdMap = {
+          'delivering': 'tab_delivering',
+          'in_warehouse': 'tab_in_warehouse',
+          'delivered': 'tab_delivered',
+          'failed': 'tab_failed',
+          'waiting': 'tab_waiting',
+          'redelivery': 'tab_redelivery'
+        };
+        
+        document.getElementById(tabIdMap[tab]).classList.add('active');
+        document.getElementById('statusSection').classList.add('active');
+        
+        currentActiveStatus = tab;
+        renderFilteredStatus(tab);
+      }
     }
     
     function selectRadio(v) {
@@ -449,12 +532,10 @@
       e.preventDefault();
       var btn = e.target.querySelector('button');
       var company = localStorage.getItem('userCompany');
-      
       var inputAmount = parseFloat(this.collectionAmount.value);
       if (isNaN(inputAmount)) inputAmount = 0; 
       
       var finalAmount = inputAmount;
-      
       if (selectedWithShipping === 'نعم') {
         finalAmount = inputAmount - currentShippingCost; 
       }
@@ -479,50 +560,107 @@
         this.reset();
         this.collectionAmount.value = "0"; 
         selectRadio('نعم');
-        updateRegionsAndShipping(); 
+        updateRegionsAndShipping();
+        cachedOrders = []; // تصفير الكاش لإجبار التطبيق على تحديث البيانات المالية والحالات عند زيارتهم
       }
       catch(err) { 
         alert('❌ خطأ في الاتصال بالخادم: ' + err.message); 
-        console.error(err);
       }
       
       btn.textContent = '🚀 إرسال الطلب للسيستم';
       btn.disabled = false;
     };
-    
-    document.getElementById('trackForm').onsubmit = async function(e) {
-      e.preventDefault();
-      var phone = this.searchPhone.value;
+
+    // جلب البيانات الأساسية وحفظها في الكاش لزيادة سرعة التصفح
+    async function fetchAllData() {
+      if (cachedOrders.length > 0) return cachedOrders;
+      
       var company = localStorage.getItem('userCompany');
-      var r = document.getElementById('statusResult');
-      r.innerHTML = '<div class="track-card">⏳ جاري البحث عن بيانات الشحنة...</div>';
+      var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company));
+      var data = await res.json();
+      cachedOrders = data.orders || [];
+      return cachedOrders;
+    }
+
+    async function refreshCurrentStatusTab() {
+      cachedOrders = []; // مسح الكاش
+      await fetchAllData();
+      renderFilteredStatus(currentActiveStatus);
+    }
+
+    // فلترة وعرض شحنات الحالات (كل تبويب يفلتر بناءً على الحالة الخاصة به)
+    async function renderFilteredStatus(statusKey) {
+      var container = document.getElementById('statusTableContainer');
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">⏳ جاري فلترة وجلب شحناتك...</div>';
+      
       try {
-        var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company) + '&phone=' + phone);
-        var data = await res.json();
-        if (data.orders && data.orders.length) {
-          var o = data.orders[data.orders.length-1];
-          r.innerHTML = '<div class="track-card" style="border-color:var(--success); background:#f0fdfa;">' +
-                        '<h3 style="color:var(--primary-color); margin-bottom:5px;">👤 '+o.client+'</h3>' +
-                        '<h2 style="color:var(--success); margin-bottom:8px;">'+o.status+'</h2>' +
-                        '<p style="font-weight:bold;">💰 الصافي: '+o.amount+' ج.م</p>' +
-                        '</div>';
-        } else { r.innerHTML = '<div class="track-card" style="border-color:var(--danger); color:var(--danger)">❌ لا توجد شحنات مسجلة بهذا الرقم لهذا المتجر</div>'; }
-      } catch(err) { r.innerHTML = '<div class="track-card" style="border-color:var(--danger); color:var(--danger)">❌ حدث خطأ أثناء جلب البيانات</div>'; }
-    };
-    
-    async function loadMyOrders() {
-      var company = localStorage.getItem('userCompany');
-      var c = document.getElementById('ordersTableContainer');
-      c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">⏳ جاري تحميل كشف الحساب وتحديث البيانات...</div>';
+        var orders = await fetchAllData();
+        
+        // خريطة لفلترة الأسماء المختلفة للحالات القادمة من شيت جوجل
+        var filterFunc = function(o) {
+          var s = String(o.status).trim();
+          if (statusKey === 'delivering') return s === 'قيد التوصيل';
+          if (statusKey === 'in_warehouse') return s === 'في المخزن' || s === 'المخزن';
+          if (statusKey === 'delivered') return s === 'تم التسليم';
+          if (statusKey === 'failed') return s === 'تعذر التسليم' || s === 'رفض الاستلام' || s === 'مرفوض' || s === 'مرتجع';
+          if (statusKey === 'waiting') return s === 'انتظار الشحن' || s === 'قيد الانتظار';
+          if (statusKey === 'redelivery') return s === 'إعادة التوصيل' || s === 'اعادة التوصيل';
+          return false;
+        };
+
+        var filtered = orders.filter(filterFunc);
+        
+        if (filtered.length > 0) {
+          var t = '<table><tr><th>العميل</th><th>الهاتف</th><th>العنوان</th><th>الحالة</th></tr>';
+          for (var i = 0; i < filtered.length; i++) {
+            var o = filtered[i];
+            var st = getStatusDetails(o.status);
+            
+            var cleanAddress = o.address || '';
+            if (cleanAddress.length > 25) {
+              cleanAddress = cleanAddress.substring(0, 22) + '...';
+            }
+            
+            t += '<tr>';
+            t += '<td style="font-weight:600;">' + o.client + '</td>';
+            t += '<td>' + o.phone + '</td>';
+            t += '<td title="'+ o.address +'">' + cleanAddress + '</td>';
+            t += '<td><span class="status-badge-inline" style="background:'+ st.bg +'; color:'+ st.color +'"><i class="fa-solid '+ st.icon +'"></i> ' + st.text + '</span></td>';
+            t += '</tr>';
+          }
+          t += '</table>';
+          container.innerHTML = t;
+        } else {
+          var arabicStateName = {
+            'delivering': 'قيد التوصيل',
+            'in_warehouse': 'في المخزن',
+            'delivered': 'تم التسليم',
+            'failed': 'تعذر التسليم',
+            'waiting': 'انتظار الشحن',
+            'redelivery': 'إعادة التوصيل'
+          }[statusKey];
+          
+          container.innerHTML = '<div class="empty-state"><i class="fa-regular fa-folder-open"></i>لا توجد أي شحنات حالتها <b>('+ arabicStateName +')</b> مسجلة حالياً.</div>';
+        }
+      } catch(err) {
+        container.innerHTML = '<p style="color:var(--danger); text-align:center; padding:20px;">❌ خطأ في معالجة البيانات: ' + err.message + '</p>';
+      }
+    }
+
+    // عرض شاشة الحسابات والمالية
+    async function loadFinancialData() {
+      var c = document.getElementById('financialTableContainer');
+      c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">⏳ جاري تحميل كشف الحساب والماليات...</div>';
+      
       try {
-        var res = await fetch(SCRIPT_URL + '?company=' + encodeURIComponent(company));
-        var data = await res.json();
-        if (data.orders && data.orders.length) {
-          var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الحساب</th></tr>';
+        var orders = await fetchAllData();
+        
+        if (orders.length > 0) {
+          var t = '<table><tr><th>التاريخ</th><th>العميل</th><th>المبلغ المستحق</th><th>الحساب</th></tr>';
           var totalNotAccounted = 0;
           
-          for (var i = 0; i < data.orders.length; i++) {
-            var s = data.orders[i];
+          for (var i = 0; i < orders.length; i++) {
+            var s = orders[i];
             var accounted = s.accounted || '';
             var isAccounted = (accounted === 'تم' || accounted === 'نعم' || accounted === 'yes' || accounted === '✓');
             
@@ -543,19 +681,18 @@
             t += '<tr>';
             t += '<td>' + s.date + '</td>';
             t += '<td>' + s.client + '</td>';
-            t += '<td style="direction:ltr;' + (parsedAmount < 0 ? 'color:var(--danger);font-weight:bold;' : '') + '">' + s.amount + '</td>';
-            t += '<td style="font-weight:600; color:' + (s.status === 'تم التسليم' ? 'var(--success)' : 'orange') + '">' + s.status + '</td>';
-            t += '<td>' + (isAccounted ? '✅ محاسب' : '❌ معلق') + '</td>';
+            t += '<td style="direction:ltr;' + (parsedAmount < 0 ? 'color:var(--danger);font-weight:bold;' : '') + '">' + s.amount + ' ج.م</td>';
+            t += '<td>' + (isAccounted ? '<span style="color:var(--success); font-weight:bold;">✅ محاسب</span>' : '<span style="color:var(--danger); font-weight:bold;">❌ معلق</span>') + '</td>';
             t += '</tr>';
           }
           
           t += '</table>';
           
           var totalClass = totalNotAccounted < 0 ? 'total-box negative' : 'total-box';
-          t += '<div class="' + totalClass + '"> إجمالي مستحقاتك المعلقة: ' + totalNotAccounted.toFixed(2) + ' EGP</div>';
+          t += '<div class="' + totalClass + '"> إجمالي تحصيلاتك المعلقة: ' + totalNotAccounted.toFixed(2) + ' EGP</div>';
           c.innerHTML = t;
         } else {
-          c.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">لا توجد طلبات مسجلة بعد لهذا المتجر.</p>';
+          c.innerHTML = '<div class="empty-state"><i class="fa-solid fa-calculator"></i>لا توجد قيود مالية أو طلبات مسجلة بعد.</div>';
         }
       } catch(err) {
         c.innerHTML = '<p style="color:var(--danger); text-align:center; padding:20px;">❌ خطأ: ' + err.message + '</p>';
